@@ -1,9 +1,11 @@
-SELECT course_code, course_name
-FROM courses
-WHERE course_code IN (
-SELECT course_code 
-FROM taken_courses
-GROUP BY course_code
-ORDER BY avg(grade) ASC
-LIMIT 5
-)
+DROP VIEW IF EXISTS studentview;
+CREATE VIEW studentview AS
+SELECT ssn, first_name, last_name, course_code, grade, course_name, credits
+FROM students
+JOIN taken_courses
+USING (ssn)
+JOIN courses
+USING (course_code);
+SELECT avg(grade)
+FROM studentview 
+WHERE ssn = '910101-1234'

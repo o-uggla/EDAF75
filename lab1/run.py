@@ -15,7 +15,10 @@ with open(args.sql_file, 'r') as f_in:
 conn = sqlite3.connect("lab1.sqlite")
 c = conn.cursor()
 
-c.execute(sql_string)
+
+print(sql_string)
+for substring in sql_string.split(";"):
+    c.execute(substring)
 
 print("\n".join([str(x) for x in c.fetchall()]))
 
