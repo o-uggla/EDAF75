@@ -1,4 +1,3 @@
-import sqlite3
 from crud import Database
 from fastapi import FastAPI
 
