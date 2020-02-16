@@ -7,7 +7,6 @@ class Database(object):
         self.c = self.conn.cursor()
 
     def users(self):
-        c = self.conn.cursor()
         data = self.c.execute("SELECT * FROM users").fetchall()
         return data
 
