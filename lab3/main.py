@@ -11,16 +11,20 @@ def return_pong():
 @app.get("/reset")
 def write_reset():
     db.reset()
-
+    return "OK"
 
 @app.get("/users")
 def read_users():
     return({"data": db.users()})
 
-
 @app.get("/movies")
-def read_movies():
-    return({"data": db.movies()})
+def read_movies(title : str = None, year : int = None):
+    return({"data": db.movies(title, year)})
+    
+
+@app.get("/movies/{imdbKey}")
+def search_movies(imdbKey: str):
+    return({"data": db.movies_by_key(imdbKey)})
 
 
 @app.get("/theaters")

@@ -10,8 +10,22 @@ class Database(object):
         data = self.c.execute("SELECT * FROM users").fetchall()
         return data
 
-    def movies(self):
-        data = self.c.execute("SELECT * FROM movies").fetchall()
+    def movies(self, title: str = None, year: int = None):
+        querryStr = "SELECT * FROM movies WHERE 1 = ?"
+        querryArgs = (1, )
+
+        if None != title:
+            querryStr += " AND title = ? "
+            querryArgs += (title, )
+        if None != year:
+            querryStr += " AND year = ? "
+            querryArgs += (year, )
+
+        data = self.c.execute(querryStr, querryArgs).fetchall()
+        return data
+
+    def movies_by_key(self, imdb_key):
+        data = self.c.execute("SELECT * FROM movies WHERE imdb_key = ?", [imdb_key]).fetchall()
         return data
 
     def theaters(self):
