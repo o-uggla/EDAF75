@@ -36,6 +36,31 @@ class Database(object):
         data = self.c.execute("SELECT * FROM performances").fetchall()
         return data
 
+    def performances_by_key(self, performance_id):
+        data = self.c.execute("SELECT * FROM movies WHERE performance_id = ?", [performance_id]).fetchall()
+        return data
+
+    def add_performance(self, imdbKey, theater, date, time):
+        try:
+            self.c.execute(
+                """
+                INSERT INTO performances(imdbKey, theater_name, perf_date, perf_time)
+                VALUES (?, ?, ?, ?)
+                """,
+                (imdbKey, theater, date, time)
+            )
+            data = self.c.execute(
+                """
+                SELECT   performance_id
+                FROM     performances
+                WHERE    rowid = last_insert_rowid()
+                """
+            ).fetchone()
+            return (True, ) + data
+        except sqlite3.Error as e:
+            print(e)
+            return (False, None)
+
     def tickets(self):
         data = self.c.execute("SELECT * FROM tickets").fetchall()
         return data

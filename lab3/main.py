@@ -1,5 +1,5 @@
 from crud import Database
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 
 app = FastAPI()
 db = Database("movies.sqlite")
@@ -35,6 +35,17 @@ def read_theaters():
 @app.get("/performances")
 def read_performances():
     return({"data": db.performances()})
+
+@app.get("/performances/{performance_id}")
+def search_performances(performance_id: str):
+    return({"data": db.performances_by_key(performance_id)})
+
+@app.post("/performances")
+def write_performance(imdb: str, theater: str, date: str, time: str):
+    (success, performance_id) = db.add_performance(imdb, theater, date, time)
+    if not success:
+        raise HTTPException(status_code=400, detail="No such movie or theater")
+    return("/performances/{}".format(performance_id))
 
 
 @app.get("/tickets")
