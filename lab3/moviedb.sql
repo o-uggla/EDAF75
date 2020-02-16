@@ -42,8 +42,6 @@ CREATE TABLE tickets (
   ticket_id DEFAULT (lower(hex(randomblob(16)))) PRIMARY KEY,
   user_id VARCHAR(99),
   performance_id VARCHAR(16),
-  perf_date DATE,
-  perf_time TIME,
   FOREIGN KEY(user_id) REFERENCES users(user_id),
   FOREIGN KEY(performance_id) REFERENCES performances(performance_id)
 );
