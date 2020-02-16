@@ -24,8 +24,8 @@ class Database(object):
         data = self.c.execute(querryStr, querryArgs).fetchall()
         return data
 
-    def movies_by_key(self, imdb_key):
-        data = self.c.execute("SELECT * FROM movies WHERE imdb_key = ?", [imdb_key]).fetchall()
+    def movies_by_key(self, imdbKey):
+        data = self.c.execute("SELECT * FROM movies WHERE imdbKey = ?", [imdbKey]).fetchall()
         return data
 
     def theaters(self):

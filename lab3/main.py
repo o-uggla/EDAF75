@@ -18,7 +18,7 @@ def read_users():
     return({"data": db.users()})
 
 @app.get("/movies")
-def read_movies(title : str = None, year : int = None):
+def read_movies(title: str = None, year: int = None):
     return({"data": db.movies(title, year)})
     
 
