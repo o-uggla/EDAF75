@@ -4,6 +4,9 @@ from fastapi import FastAPI
 app = FastAPI()
 db = Database("movies.sqlite")
 
+@app.get("/ping")
+def return_pong():
+    return "pong"
 
 @app.get("/reset")
 def write_reset():
