@@ -8,7 +8,7 @@ db = Database("movies.sqlite")
 def return_pong():
     return "pong"
 
-@app.get("/reset")
+@app.post("/reset")
 def write_reset():
     db.reset()
     return "OK"
