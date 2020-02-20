@@ -45,3 +45,27 @@ CREATE TABLE tickets (
   FOREIGN KEY(user_id) REFERENCES users(user_id),
   FOREIGN KEY(performance_id) REFERENCES performances(performance_id)
 );
+
+DROP TRIGGER IF EXISTS check_tickets_availabillity;
+CREATE TRIGGER check_tickets_availabillity
+  BEFORE INSERT 
+  ON tickets
+BEGIN
+  SELECT
+    CASE WHEN
+      (SELECT 
+          theaters.capacity - coalesce(nbrTickets, 0) AS remainingSeats
+        FROM performances
+        LEFT JOIN theaters
+        ON performances.theater_name = theaters.theater_name
+        LEFT JOIN (
+          SELECT performance_id, count() AS nbrTickets
+          FROM tickets
+          GROUP BY performance_id
+        ) AS seats
+        ON performances.performance_id = seats.performance_id
+        WHERE performances.performance_id = NEW.performance_id) <= 0
+    THEN
+      RAISE (ROLLBACK, "No tickets left")
+    END;
+END;

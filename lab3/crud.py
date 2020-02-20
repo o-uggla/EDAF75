@@ -86,8 +86,40 @@ class Database(object):
             print(e)
             return (False, None)
 
-    def tickets(self):
-        data = self.c.execute("SELECT * FROM tickets").fetchall()
+    def add_ticket(self, performance_id, user_id, password):
+        try:
+            data = self.c.execute(
+                    """
+                    SELECT   DISTINCT user_id
+                    FROM     users
+                    WHERE    user_id = ? AND password = ?
+                    """, (user_id, password)
+                ).fetchall()
+            if 0 == len(data):
+                return (False, 'Wrong password')
+
+            self.c.execute(
+                """
+                INSERT
+                INTO tickets (performance_id, user_id, ticket_id)
+                VALUES (?, ?, lower(hex(randomblob(16))))
+                """,
+                (performance_id, user_id )
+            )
+            data = self.c.execute(
+                    """
+                    SELECT   ticket_id
+                    FROM     tickets
+                    WHERE    rowid = last_insert_rowid()
+                    """
+                ).fetchone()
+            self.conn.commit()
+            return (True, ) + data
+        except sqlite3.Error as e:
+            if 'No tickets left' == e.args[0]:
+                return (False, 'No tickets left')
+            return(False, 'Error')
+
         return data
 
     def reset(self):

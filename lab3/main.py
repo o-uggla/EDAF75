@@ -52,6 +52,17 @@ def write_performance(imdb: str, theater: str, date: str, time: str):
 def read_tickets():
     return({"data": db.tickets()})
 
+@app.post("/tickets")
+def add_ticket(performance: str, user: str, pwd: str):
+    (success, message) = db.add_ticket(performance, user, pwd)
+    print(message)
+
+    if not success:
+        if 'User does not exist or wrong credentials.' == message:
+            raise HTTPException(status_code=404, detail="Wrong password")
+        elif 'Insufficient seats' == message:
+            raise HTTPException(status_code=500, detail="No tickets left")
+    return("/tickets/{}".format(message))
 
 @app.get("/items/{item_id}")
 def read_item(item_id: int, q: str = None):
