@@ -1,5 +1,5 @@
 import sqlite3
-
+import json 
 
 class Database(object):
     def __init__(self, path: str):
@@ -8,11 +8,18 @@ class Database(object):
         self.c.execute("PRAGMA foreign_keys = ON")
 
     def users(self):
-        data = self.c.execute("SELECT * FROM users").fetchall()
-        return data
+        keys = ['user_id', 'user_name', 'password']
+        data = self.c.execute("SELECT user_id, user_name, password FROM users").fetchall()
+        res = self.prettierJsonList(keys, data)
+        return res
 
     def movies(self, title: str = None, year: int = None):
-        querryStr = "SELECT * FROM movies WHERE 1 = ?"
+        keys = ['imdbKey', 'title', 'year']
+        querryStr = """
+            SELECT imdbKey, title, year
+            FROM movies
+            WHERE 1 = ?
+            """
         querryArgs = (1, )
 
         if None != title:
@@ -23,17 +30,28 @@ class Database(object):
             querryArgs += (year, )
 
         data = self.c.execute(querryStr, querryArgs).fetchall()
-        return data
+        res = self.prettierJsonList(keys, data)
+        return res
 
     def movies_by_key(self, imdbKey):
-        data = self.c.execute("SELECT * FROM movies WHERE imdbKey = ?", [imdbKey]).fetchall()
-        return data
+        keys = ['imdbKey', 'title', 'year']
+        data = self.c.execute(
+            """
+            SELECT imdbKey, title, year
+            FROM movies
+            WHERE imdbKey = ?
+            """, [imdbKey]).fetchall()
+        res = self.prettierJsonList(keys, data)
+        return res
 
     def theaters(self):
-        data = self.c.execute("SELECT * FROM theaters").fetchall()
-        return data
+        keys = ['theater', 'capacity']
+        data = self.c.execute("SELECT theater_name, capacity FROM theaters").fetchall()
+        res = self.prettierJsonList(keys, data)
+        return res
 
     def performances(self):
+        keys = ['performanceId', 'date', 'startTime', 'title', 'year', 'theater', 'remainingSeats']
         data = self.c.execute(
             """
             SELECT 
@@ -56,9 +74,10 @@ class Database(object):
             ) AS seats
             ON performances.performance_id = seats.performance_id
             """).fetchall()
-        return data
+        return self.prettierJsonList(keys, data)
 
     def performances_by_key(self, performance_id):
+        keys = ['performanceId', 'date', 'startTime', 'title', 'year', 'theater', 'remainingSeats']
         data = self.c.execute(
             """
             SELECT 
@@ -82,7 +101,8 @@ class Database(object):
             ON performances.performance_id = seats.performance_id
             WHERE performances.performance_id = ?
             """, [performance_id]).fetchall()
-        return data
+        res = self.prettierJsonList(keys, data)
+        return res
 
     def add_performance(self, imdbKey, theater, date, time):
         try:
@@ -142,9 +162,17 @@ class Database(object):
             return(False, 'Error')
 
     def customer_tickes(self, user_id):
+        keys = ['performanceId', 'date', 'startTime', 'title', 'year', 'theater', 'remainingSeats']
         data = self.c.execute(
             """
-            SELECT   perf_date, perf_time, theater_name, title, year, count()
+            SELECT
+                performances.performance_id,
+                perf_date,
+                perf_time,
+                title,
+                year,
+                theater_name,
+                count()
             FROM     tickets
             LEFT JOIN performances
             ON performances.performance_id = tickets.performance_id
@@ -154,7 +182,8 @@ class Database(object):
             GROUP BY tickets.performance_id
             """, [user_id]
             ).fetchall()
-        return data
+        res = self.prettierJsonList(keys, data)
+        return res
         
     def reset(self):
         users = [
@@ -189,3 +218,6 @@ class Database(object):
         self.c.executemany(
             "INSERT INTO theaters values (?,?)", theaters)
         self.conn.commit()
+
+    def prettierJsonList(self, key, data):
+        return [dict(zip(key, d))for d in data]

@@ -13,6 +13,7 @@ def write_reset():
     db.reset()
     return "OK"
 
+# TODO: remove only for testing
 @app.get("/users")
 def read_users():
     return({"data": db.users()})

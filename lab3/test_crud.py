@@ -8,19 +8,21 @@ class TestDatabase(unittest.TestCase):
         db.reset()
         print("Base.setUp()")
 
-    def tearDown(self):
-        print("Base.tearDown()")
-
     def test_movies_by_key(self):
-        data = [('The Shape of Water', 2017, 'tt5580390')]
+        keys = ['imdbKey', 'title', 'year']
+        data = [('tt5580390', 'The Shape of Water', 2017)]
         dbData = db.movies_by_key('tt5580390')
-        self.assertEqual(data, dbData)
+        res = db.prettierJsonList(keys, data)
+        self.assertEqual(sorted(res), sorted(dbData))
 
     def test_add_performance(self):
+        keys = ['performanceId', 'date', 'startTime', 'title', 'year', 'theater', 'remainingSeats']
         success, dbData = db.add_performance('tt5580390', 'Kino', '2020-01-02', '19:00')
         self.assertTrue(success)
         performanceId = dbData.replace("/performances/","")
-        data= [(performanceId, '2020-01-02', '19:00', 'The Shape of Water', 2017, 'Kino', 10)]
+
+        data = [(performanceId, '2020-01-02', '19:00', 'The Shape of Water', 2017, 'Kino', 10)]
+        data = db.prettierJsonList(keys, data)
         dbData = db.performances_by_key(performanceId)
         self.assertEqual(data, dbData)
 
@@ -62,57 +64,76 @@ class TestDatabase(unittest.TestCase):
     def test_customer_tickets(self):
         success, dbData = db.add_performance('tt5580390', 'Kino', '2020-01-02', '19:00')
         self.assertTrue(success)
-        performanceId = dbData.replace("/performances/","")
-        success, dbData = db.add_ticket(performanceId, 'alice', 'dobido')
+        performanceId1 = dbData.replace("/performances/","")
+        success, dbData = db.add_ticket(performanceId1, 'alice', 'dobido')
         self.assertTrue(success)
-        success, dbData = db.add_ticket(performanceId, 'alice', 'dobido')
+        success, dbData = db.add_ticket(performanceId1, 'alice', 'dobido')
         self.assertTrue(success)
 
-        data = [('2020-01-02', '19:00', 'Kino', 'The Shape of Water', 2017, 2)]
+        # Test show tickets to one show
+        keys = ['performanceId', 'date', 'startTime', 'title', 'year', 'theater', 'remainingSeats']
+        data = [(performanceId1, '2020-01-02', '19:00', 'The Shape of Water', 2017, 'Kino', 2)]
+        data = db.prettierJsonList(keys, data)
+        data.sort(key=lambda x: x['performanceId'], reverse=False)
         dbData = db.customer_tickes('alice')
-        self.assertEqual(data, dbData)
+        dbData.sort(key=lambda x: x['performanceId'], reverse=False)
+        for d, dbD in zip(data, dbData):
+            self.assertDictEqual(d, dbD)
 
+        # Test user got no tickets
         data = []
         dbData = db.customer_tickes('bob')
         self.assertEqual(data, dbData)
 
+        # Test show tickets to multiple shows
         success, dbData = db.add_performance('tt4975722', 'Södran', '2020-01-03', '18:00')
         self.assertTrue(success)
-        performanceId = dbData.replace("/performances/","")
-        success, dbData = db.add_ticket(performanceId, 'alice', 'dobido')
+        performanceId2 = dbData.replace("/performances/","")
+        success, dbData = db.add_ticket(performanceId2, 'alice', 'dobido')
         self.assertTrue(success)
 
-        data = [('2020-01-02', '19:00', 'Kino', 'The Shape of Water', 2017, 2),
-                ('2020-01-03', '18:00', 'Södran', 'Moonlight', 2016, 1)]
+        data = [(performanceId2, '2020-01-03', '18:00', 'Moonlight', 2016, 'Södran', 1),
+                (performanceId1, '2020-01-02', '19:00', 'The Shape of Water', 2017, 'Kino', 2)]
+        data = db.prettierJsonList(keys, data)
+        data.sort(key=lambda x: x['performanceId'], reverse=False)
         dbData = db.customer_tickes('alice')
-        self.assertEqual(sorted(data), sorted(dbData))
-
-
+        dbData.sort(key=lambda x: x['performanceId'], reverse=False)
+        for d, dbD in zip(data, dbData):
+            self.assertDictEqual(d, dbD)
 
     def test_reset(self):
+        keys = ['user_id', 'user_name', 'password']
         users = [
             ('alice', 'Alice', 'dobido'),
             ('bob', 'Bob', 'whatsinaname')
         ]
+        users = db.prettierJsonList(keys, users)
         dbUsers = db.users()
-        self.assertEqual(users, dbUsers)
+        for user, dbUser in zip(users, dbUsers):
+            self.assertDictEqual(user, dbUser)
 
+        keys = ['title', 'year', 'imdbKey']
         movies = [
             ('The Shape of Water', 2017, 'tt5580390'),
             ('Moonlight', 2016, 'tt4975722'),
             ('Spotlight', 2015, 'tt1895587'),
             ('Birdman', 2014, 'tt2562232')
         ]
+        movies = db.prettierJsonList(keys, movies)
         dbMovies = db.movies()
-        self.assertEqual(movies, dbMovies)
+        for movie, dbMovie in zip(movies, dbMovies):
+            self.assertDictEqual(movie, dbMovie)
 
+        keys = ['theater', 'capacity']
         theaters = [
             ('Kino', 10),
             ('Södran', 16),
             ('Skandia', 100)
         ]
+        theaters = db.prettierJsonList(keys, theaters)
         dbTheaters = db.theaters()
-        self.assertEqual(theaters, dbTheaters)
+        for theater, dbTheater in zip(theaters, dbTheaters):
+            self.assertDictEqual(theater, dbTheater)
 
         performances = []
         dbPerformances= db.performances()
