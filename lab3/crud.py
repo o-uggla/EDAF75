@@ -36,25 +36,25 @@ class Database(object):
     def performances(self):
         data = self.c.execute(
             """
-        SELECT 
-            performances.performance_id AS performanceId,
-            perf_date AS date,
-            perf_time AS startTime,
-            title,
-            year,
-            performances.theater_name AS theater,
-            theaters.capacity - coalesce(nbrTickets, 0) AS remainingSeats
-        FROM performances
-        LEFT JOIN movies
-        ON performances.imdbKey = movies.imdbKey
-        LEFT JOIN theaters
-        ON performances.theater_name = theaters.theater_name
-        LEFT JOIN (
-            SELECT performance_id, count() AS nbrTickets
-            FROM tickets
-            GROUP BY performance_id
-        ) AS seats
-        ON performances.performance_id = seats.performance_id
+            SELECT 
+                performances.performance_id AS performanceId,
+                perf_date AS date,
+                perf_time AS startTime,
+                title,
+                year,
+                performances.theater_name AS theater,
+                theaters.capacity - coalesce(nbrTickets, 0) AS remainingSeats
+            FROM performances
+            LEFT JOIN movies
+            ON performances.imdbKey = movies.imdbKey
+            LEFT JOIN theaters
+            ON performances.theater_name = theaters.theater_name
+            LEFT JOIN (
+                SELECT performance_id, count() AS nbrTickets
+                FROM tickets
+                GROUP BY performance_id
+            ) AS seats
+            ON performances.performance_id = seats.performance_id
             """).fetchall()
         return data
 
@@ -106,7 +106,7 @@ class Database(object):
         except sqlite3.Error as e:
             print(e)
             return (False, None)
-
+    
     def add_ticket(self, performance_id, user_id, password):
         try:
             data = self.c.execute(
@@ -141,8 +141,21 @@ class Database(object):
                 return (False, 'No tickets left')
             return(False, 'Error')
 
+    def customer_tickes(self, user_id):
+        data = self.c.execute(
+            """
+            SELECT   perf_date, perf_time, theater_name, title, year, count()
+            FROM     tickets
+            LEFT JOIN performances
+            ON performances.performance_id = tickets.performance_id
+            LEFT JOIN movies
+            ON movies.imdbKey = performances.imdbKey
+            WHERE    user_id = ?
+            GROUP BY tickets.performance_id
+            """, [user_id]
+            ).fetchall()
         return data
-
+        
     def reset(self):
         users = [
             ('alice', 'Alice', 'dobido'),

@@ -47,10 +47,9 @@ def write_performance(imdb: str, theater: str, date: str, time: str):
         raise HTTPException(status_code=400, detail="No such movie or theater")
     return("/performances/{}".format(performance_id))
 
-
-@app.get("/tickets")
-def read_tickets():
-    return({"data": db.tickets()})
+@app.get("/customers/{user_id}/tickets")
+def read_tickets(user_id: str):
+    return({"data": db.customer_tickes(user_id)})
 
 @app.post("/tickets")
 def add_ticket(performance: str, user: str, pwd: str):
@@ -63,7 +62,3 @@ def add_ticket(performance: str, user: str, pwd: str):
         elif 'Insufficient seats' == message:
             raise HTTPException(status_code=500, detail="No tickets left")
     return("/tickets/{}".format(message))
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: str = None):
-    return {"item_id": item_id, "q": q}
