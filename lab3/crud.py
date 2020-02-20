@@ -5,6 +5,7 @@ class Database(object):
     def __init__(self, path: str):
         self.conn = sqlite3.connect(path, check_same_thread=False)
         self.c = self.conn.cursor()
+        self.c.execute("PRAGMA foreign_keys = ON")
 
     def users(self):
         data = self.c.execute("SELECT * FROM users").fetchall()
@@ -107,6 +108,8 @@ class Database(object):
             ('Södran', '16'),
             ('Skandia', '100')
         ]
+        self.c.execute("DELETE FROM tickets")
+        self.c.execute("DELETE FROM performances")
 
         self.c.execute("DELETE FROM users")
         self.c.executemany(

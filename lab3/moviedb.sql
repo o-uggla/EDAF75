@@ -13,13 +13,13 @@ PRAGMA foreign_keys=ON;
 
 CREATE TABLE users (
   user_id VARCHAR(99) NOT NULL UNIQUE PRIMARY KEY,
-  user_name VARCHAR(99),
-  password INTEGER NOT NULL
+  user_name VARCHAR(99) NOT NULL,
+  password VARCHAR(99) NOT NULL
 );
 
 CREATE TABLE movies (
-  title VARCHAR(99), 
-  year INTEGER,
+  title VARCHAR(99) NOT NULL, 
+  year INTEGER NOT NULL,
   imdbKey VARCHAR(99) PRIMARY KEY
 );
 
@@ -29,19 +29,19 @@ CREATE TABLE theaters (
 );
 
 CREATE TABLE performances (
-  performance_id DEFAULT (lower(hex(randomblob(16)))) PRIMARY KEY,
-  theater_name VARCHAR(99),
+  performance_id TEXT DEFAULT (lower(hex(randomblob(16)))) PRIMARY KEY,
+  theater_name VARCHAR(99) NOT NULL,
   perf_date DATE,
   perf_time TIME,
-  imdbKey VARCHAR(99),
+  imdbKey VARCHAR(99) NOT NULL,
   FOREIGN KEY(theater_name) REFERENCES theaters(theater_name),
   FOREIGN KEY(imdbKey) REFERENCES movies(imdbKey)
 );
 
 CREATE TABLE tickets (
-  ticket_id DEFAULT (lower(hex(randomblob(16)))) PRIMARY KEY,
-  user_id VARCHAR(99),
-  performance_id VARCHAR(16),
+  ticket_id TEXT DEFAULT (lower(hex(randomblob(16)))) PRIMARY KEY,
+  user_id VARCHAR(99) NOT NULL,
+  performance_id VARCHAR(16) NOT NULL,
   FOREIGN KEY(user_id) REFERENCES users(user_id),
   FOREIGN KEY(performance_id) REFERENCES performances(performance_id)
 );
