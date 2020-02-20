@@ -33,7 +33,9 @@ class Database(object):
         data = self.c.execute("SELECT * FROM theaters").fetchall()
         return data
 
-    performanceQuerry = """
+    def performances(self):
+        data = self.c.execute(
+            """
         SELECT 
             performances.performance_id AS performanceId,
             perf_date AS date,
@@ -53,15 +55,33 @@ class Database(object):
             GROUP BY performance_id
         ) AS seats
         ON performances.performance_id = seats.performance_id
-        """
-
-    def performances(self):
-        data = self.c.execute(Database.performanceQuerry).fetchall()
+            """).fetchall()
         return data
 
     def performances_by_key(self, performance_id):
-        querryStr = Database.performanceQuerry + " WHERE performances.performance_id = ?"
-        data = self.c.execute(querryStr, [performance_id]).fetchall()
+        data = self.c.execute(
+            """
+            SELECT 
+                performances.performance_id AS performanceId,
+                perf_date AS date,
+                perf_time AS startTime,
+                title,
+                year,
+                performances.theater_name AS theater,
+                theaters.capacity - coalesce(nbrTickets, 0) AS remainingSeats
+            FROM performances
+            LEFT JOIN movies
+            ON performances.imdbKey = movies.imdbKey
+            LEFT JOIN theaters
+            ON performances.theater_name = theaters.theater_name
+            LEFT JOIN (
+                SELECT performance_id, count() AS nbrTickets
+                FROM tickets
+                GROUP BY performance_id
+            ) AS seats
+            ON performances.performance_id = seats.performance_id
+            WHERE performances.performance_id = ?
+            """, [performance_id]).fetchall()
         return data
 
     def add_performance(self, imdbKey, theater, date, time):
@@ -81,6 +101,7 @@ class Database(object):
                 WHERE    rowid = last_insert_rowid()
                 """
             ).fetchone()
+            self.conn.commit()
             return (True, ) + data
         except sqlite3.Error as e:
             print(e)
