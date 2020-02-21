@@ -11,4 +11,9 @@ def return_pong():
 @app.post("/reset")
 def write_reset():
     db.reset()
-    return "OK"
+    return ({"status": "ok"})
+
+@app.get("/customers")
+def read_customers():
+    return({"customers": db.get_customers()})
+

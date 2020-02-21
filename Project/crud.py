@@ -6,6 +6,12 @@ class Database(object):
     self.c = self.conn.cursor()
     self.c.execute("PRAGMA foreign_keys = ON")
 
+  def get_customers(self):
+    keys = ['name', 'address']
+    data = self.c.execute("SELECT name, address FROM customers").fetchall()
+    res = self.prettierJsonList(keys, data)
+    return res
+
   def reset(self):
     cookies = [
       ('Nut ring'),
