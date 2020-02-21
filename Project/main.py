@@ -21,3 +21,7 @@ def read_customers():
 def read_ingredients():
     return({"ingredients": db.get_ingredients()})
 
+@app.get("/cookies")
+def read_cookies():
+    return({"cookies": db.get_cookies()})
+

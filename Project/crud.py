@@ -18,6 +18,11 @@ class Database(object):
     res = self.prettierJsonList(keys, data)
     return res
 
+  def get_cookies(self):
+    keys = ['name']
+    data = self.c.execute("SELECT name FROM cookies").fetchall()
+    res = self.prettierJsonList(keys, data)
+    return res
   def reset(self):
     cookies = [
       ('Nut ring'),
