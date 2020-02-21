@@ -23,6 +23,33 @@ class Database(object):
     data = self.c.execute("SELECT name FROM cookies").fetchall()
     res = self.prettierJsonList(keys, data)
     return res
+
+  def get_recipies(self):
+    keys = ['cookie', 'ingredient', 'quantity', 'unit']
+    data = self.c.execute("""
+      SELECT cookie_name, ingredient_name, recipies.quantity, unit
+      FROM recipies
+      LEFT JOIN ingredients
+      ON recipies.ingredient_name = ingredients.name
+      ORDER BY cookie_name, ingredient_name ASC
+      """).fetchall()
+    res = self.prettierJsonList(keys, data)
+    return res
+
+  def get_pallets(self):
+    keys = ['id', 'cookie', 'productionDate', 'customer', 'blocked']
+    data = self.c.execute("""
+      SELECT pallets.reference, palletContent.cookie_name, productionDate, customer_name, blocked
+      FROM pallets
+      LEFT JOIN orders
+      ON pallets.order_reference = orders.reference
+      LEFT JOIN palletContents
+      ON pallets.reference = palletContents.pallet_reference
+      ORDER BY pallets.productionDate, palletContent.cookie_name DESC
+      """).fetchall()
+    res = self.prettierJsonList(keys, data)
+    return res
+  
   def reset(self):
     cookies = [
       ('Nut ring'),

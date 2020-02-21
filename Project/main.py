@@ -25,3 +25,10 @@ def read_ingredients():
 def read_cookies():
     return({"cookies": db.get_cookies()})
 
+@app.get("/recipies")
+def read_recipies():
+    return({"recipies": db.get_recipies()})
+
+@app.get("/pallets")
+def read_pallets():
+    return({"pallets": db.get_pallets()})

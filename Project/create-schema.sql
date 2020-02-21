@@ -34,16 +34,22 @@ CREATE TABLE recipies (
 
 CREATE TABLE pallets (
   reference TEXT DEFAULT (lower(hex(randomblob(16)))) PRIMARY KEY,
-  productionDate DATE NOT NULL,
+  productionDate DATE DEFAULT CURRENT_DATE,
   blocked BOOLEAN DEFAULT 0,
-  customer_name TEXT,
-  FOREIGN KEY (customer_name) REFERENCES customers(name)
+  order_reference TEXT,
+  FOREIGN KEY (order_reference) REFERENCES orders(reference)
 );
 
 CREATE TABLE palletContents (
-  pallet_reference TEXT,
-  cookie_name TEXT,
+  pallet_reference TEXT NOT NULL,
+  cookie_name TEXT NOT NULL,
   FOREIGN KEY (pallet_reference) REFERENCES pallets(reference)
   FOREIGN KEY (cookie_name) REFERENCES cookies(name)
+);
+
+CREATE TABLE orders (
+  reference TEXT DEFAULT (lower(hex(randomblob(16)))) PRIMARY KEY,
+  customer_name TEXT NOT NULL,
+  FOREIGN KEY (customer_name) REFERENCES customers(name)
 );
 
