@@ -8,11 +8,12 @@ db = Database("movies.sqlite")
 def return_pong():
     return "pong"
 
-@app.get("/reset")
+@app.post("/reset")
 def write_reset():
     db.reset()
     return "OK"
 
+# TODO: remove only for testing
 @app.get("/users")
 def read_users():
     return({"data": db.users()})
@@ -47,12 +48,18 @@ def write_performance(imdb: str, theater: str, date: str, time: str):
         raise HTTPException(status_code=400, detail="No such movie or theater")
     return("/performances/{}".format(performance_id))
 
+@app.get("/customers/{user_id}/tickets")
+def read_tickets(user_id: str):
+    return({"data": db.customer_tickes(user_id)})
 
-@app.get("/tickets")
-def read_tickets():
-    return({"data": db.tickets()})
+@app.post("/tickets")
+def add_ticket(performance: str, user: str, pwd: str):
+    (success, message) = db.add_ticket(performance, user, pwd)
+    print(message)
 
-
-@app.get("/items/{item_id}")
-def read_item(item_id: int, q: str = None):
-    return {"item_id": item_id, "q": q}
+    if not success:
+        if 'User does not exist or wrong credentials.' == message:
+            raise HTTPException(status_code=404, detail="Wrong password")
+        elif 'Insufficient seats' == message:
+            raise HTTPException(status_code=500, detail="No tickets left")
+    return("/tickets/{}".format(message))
