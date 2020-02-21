@@ -17,3 +17,7 @@ def write_reset():
 def read_customers():
     return({"customers": db.get_customers()})
 
+@app.get("/ingredients")
+def read_ingredients():
+    return({"ingredients": db.get_ingredients()})
+

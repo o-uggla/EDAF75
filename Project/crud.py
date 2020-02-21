@@ -12,6 +12,12 @@ class Database(object):
     res = self.prettierJsonList(keys, data)
     return res
 
+  def get_ingredients(self):
+    keys = ['name', 'quantity', 'unit']
+    data = self.c.execute("SELECT name, quantity, unit FROM ingredients").fetchall()
+    res = self.prettierJsonList(keys, data)
+    return res
+
   def reset(self):
     cookies = [
       ('Nut ring'),
